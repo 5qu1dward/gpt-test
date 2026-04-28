@@ -23,6 +23,29 @@ function randomPointInSphere(radius: number) {
   };
 }
 
+function createParticleTexture() {
+  const size = 96;
+  const canvas = document.createElement("canvas");
+  canvas.width = size;
+  canvas.height = size;
+
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return null;
+
+  const gradient = ctx.createRadialGradient(48, 48, 0, 48, 48, 48);
+  gradient.addColorStop(0, "rgba(255, 255, 255, 1)");
+  gradient.addColorStop(0.28, "rgba(255, 255, 255, 0.92)");
+  gradient.addColorStop(0.58, "rgba(255, 255, 255, 0.28)");
+  gradient.addColorStop(1, "rgba(255, 255, 255, 0)");
+
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, size, size);
+
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.needsUpdate = true;
+  return texture;
+}
+
 export function ParticleScene({ handStateRef }: ParticleSceneProps) {
   const mountRef = useRef<HTMLDivElement | null>(null);
 
@@ -42,12 +65,17 @@ export function ParticleScene({ handStateRef }: ParticleSceneProps) {
     const positions = new Float32Array(PARTICLE_COUNT * 3);
     const velocities = new Float32Array(PARTICLE_COUNT * 3);
     const sphereTargets = new Float32Array(PARTICLE_COUNT * 3);
+    const colors = new Float32Array(PARTICLE_COUNT * 3);
     const seeds = new Float32Array(PARTICLE_COUNT);
+    const color = new THREE.Color();
 
     for (let i = 0; i < PARTICLE_COUNT; i += 1) {
       const i3 = i * 3;
       const point = randomPointInSphere(1.3);
       const target = randomPointInSphere(1);
+      const hue = (0.54 + Math.random() * 0.42 + target.y * 0.06) % 1;
+      const saturation = 0.72 + Math.random() * 0.22;
+      const lightness = 0.56 + Math.random() * 0.16;
 
       positions[i3] = point.x;
       positions[i3 + 1] = point.y;
@@ -56,6 +84,11 @@ export function ParticleScene({ handStateRef }: ParticleSceneProps) {
       sphereTargets[i3] = target.x;
       sphereTargets[i3 + 1] = target.y;
       sphereTargets[i3 + 2] = target.z;
+
+      color.setHSL(hue, saturation, lightness);
+      colors[i3] = color.r;
+      colors[i3 + 1] = color.g;
+      colors[i3 + 2] = color.b;
 
       velocities[i3] = (Math.random() - 0.5) * 0.01;
       velocities[i3 + 1] = (Math.random() - 0.5) * 0.01;
@@ -68,18 +101,36 @@ export function ParticleScene({ handStateRef }: ParticleSceneProps) {
       "position",
       new THREE.BufferAttribute(positions, 3).setUsage(THREE.DynamicDrawUsage),
     );
+    geometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
 
+    const particleTexture = createParticleTexture();
     const material = new THREE.PointsMaterial({
-      color: 0x66f0ff,
-      size: 0.034,
+      size: 0.062,
+      map: particleTexture,
       transparent: true,
       opacity: 0.9,
+      vertexColors: true,
       blending: THREE.AdditiveBlending,
       depthWrite: false,
+      sizeAttenuation: true,
+    });
+
+    const glowMaterial = new THREE.PointsMaterial({
+      size: 0.18,
+      map: particleTexture,
+      transparent: true,
+      opacity: 0.18,
+      vertexColors: true,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+      sizeAttenuation: true,
     });
 
     const points = new THREE.Points(geometry, material);
+    const glowPoints = new THREE.Points(geometry, glowMaterial);
     points.frustumCulled = false;
+    glowPoints.frustumCulled = false;
+    scene.add(glowPoints);
     scene.add(points);
 
     const clock = new THREE.Clock();
@@ -106,6 +157,7 @@ export function ParticleScene({ handStateRef }: ParticleSceneProps) {
       const step = delta * 60;
       const elapsed = clock.getElapsedTime();
       const current = handStateRef.current;
+      const gestureBoost = current.gesture === "Open Palm" ? 1.28 : current.gesture === "Pinch" ? 1.12 : 1;
 
       // MediaPipe coordinates are 0-1. Map them into the visible Three.js world.
       if (current.indexTip) {
@@ -126,6 +178,7 @@ export function ParticleScene({ handStateRef }: ParticleSceneProps) {
 
       smoothTarget.lerp(pointerTarget, current.indexTip ? 0.16 : 0.035);
       points.position.copy(smoothTarget);
+      glowPoints.position.copy(smoothTarget);
 
       const pos = geometry.attributes.position.array as Float32Array;
 
@@ -190,9 +243,14 @@ export function ParticleScene({ handStateRef }: ParticleSceneProps) {
       }
 
       geometry.attributes.position.needsUpdate = true;
+      material.size = 0.058 * gestureBoost * (1 + Math.sin(elapsed * 2.4) * 0.08);
+      glowMaterial.size = 0.18 * gestureBoost * (1 + Math.sin(elapsed * 1.6) * 0.12);
+      material.opacity = current.gesture === "Fist" ? 0.68 : 0.92;
+      glowMaterial.opacity = current.gesture === "Open Palm" ? 0.28 : 0.18;
       points.rotation.x = Math.sin(elapsed * 0.18) * 0.08;
       points.rotation.y = elapsed * 0.12;
       points.rotation.z = Math.sin(elapsed * 0.25) * 0.025;
+      glowPoints.rotation.copy(points.rotation);
       renderer.render(scene, camera);
     };
 
@@ -203,6 +261,8 @@ export function ParticleScene({ handStateRef }: ParticleSceneProps) {
       window.removeEventListener("resize", resize);
       geometry.dispose();
       material.dispose();
+      glowMaterial.dispose();
+      particleTexture?.dispose();
       renderer.dispose();
       renderer.domElement.remove();
     };
