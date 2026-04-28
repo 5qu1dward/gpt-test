@@ -33,7 +33,9 @@ select {
   grid-template-rows: auto 1fr auto;
   min-height: 100vh;
   padding: 22px;
-  background: #05070b;
+  background:
+    radial-gradient(circle at 50% 28%, rgba(31, 56, 104, 0.32), transparent 42%),
+    linear-gradient(145deg, #02040c 0%, #070818 48%, #090414 100%);
   gap: 18px;
 }
 
@@ -52,6 +54,41 @@ select {
   font-size: clamp(1.35rem, 2.4vw, 2.2rem);
   font-weight: 750;
   letter-spacing: 0;
+  color: #f6fbff;
+  text-shadow:
+    0 0 22px rgba(99, 232, 255, 0.42),
+    0 0 42px rgba(255, 219, 138, 0.16);
+}
+
+.top-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.effect-switch {
+  display: inline-flex;
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  border-radius: 8px;
+  background: rgba(2, 7, 10, 0.72);
+}
+
+.effect-switch button {
+  min-width: 88px;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: rgba(244, 251, 255, 0.72);
+  cursor: pointer;
+}
+
+.effect-switch button.active {
+  background: rgba(102, 240, 255, 0.16);
+  color: #f4fbff;
+  box-shadow: 0 0 18px rgba(102, 240, 255, 0.18);
 }
 
 .gesture-pill {
@@ -74,7 +111,10 @@ select {
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 8px;
-  background: #080d12;
+  background:
+    radial-gradient(circle at 50% 45%, rgba(57, 224, 255, 0.12), transparent 40%),
+    radial-gradient(circle at 50% 70%, rgba(255, 216, 127, 0.08), transparent 34%),
+    #050814;
   box-shadow: 0 28px 90px rgba(0, 0, 0, 0.42);
 }
 
@@ -123,6 +163,34 @@ select {
   backdrop-filter: blur(10px);
 }
 
+.gesture-badge {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 4;
+  display: grid;
+  gap: 4px;
+  min-width: 190px;
+  padding: 12px 14px;
+  border: 1px solid rgba(102, 240, 255, 0.28);
+  border-radius: 8px;
+  background: rgba(2, 7, 18, 0.62);
+  color: rgba(244, 251, 255, 0.78);
+  text-align: right;
+  box-shadow: 0 0 30px rgba(102, 240, 255, 0.13);
+  backdrop-filter: blur(10px);
+}
+
+.gesture-badge span {
+  font-size: 0.76rem;
+  text-transform: uppercase;
+}
+
+.gesture-badge strong {
+  color: #f4fbff;
+  font-weight: 760;
+}
+
 .status-panel strong {
   color: #ffb4a8;
   font-weight: 650;
@@ -141,6 +209,192 @@ select {
   background: rgba(255, 255, 255, 0.07);
 }
 
+/* Home Page Styles */
+.home-shell {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 50% 28%, rgba(31, 56, 104, 0.32), transparent 42%),
+    linear-gradient(145deg, #02040c 0%, #070818 48%, #090414 100%);
+}
+
+.home-bg-orbs {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.4;
+  animation: float 8s ease-in-out infinite;
+}
+
+.orb-1 {
+  width: 400px;
+  height: 400px;
+  top: -100px;
+  left: -100px;
+  background: radial-gradient(circle, rgba(102, 240, 255, 0.3), transparent 70%);
+  animation-delay: 0s;
+}
+
+.orb-2 {
+  width: 350px;
+  height: 350px;
+  bottom: -80px;
+  right: -80px;
+  background: radial-gradient(circle, rgba(255, 180, 168, 0.25), transparent 70%);
+  animation-delay: -3s;
+}
+
+.orb-3 {
+  width: 300px;
+  height: 300px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(circle, rgba(102, 240, 255, 0.15), transparent 70%);
+  animation-delay: -5s;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-20px) scale(1.05); }
+}
+
+.home-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 32px;
+  padding: 40px 20px;
+  text-align: center;
+}
+
+.home-logo {
+  animation: pulse 3s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.9; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.05); }
+}
+
+.home-title {
+  margin: 0;
+  font-size: clamp(2rem, 5vw, 3.2rem);
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  color: #f6fbff;
+  text-shadow:
+    0 0 30px rgba(102, 240, 255, 0.5),
+    0 0 60px rgba(102, 240, 255, 0.25);
+}
+
+.home-subtitle {
+  margin: 0;
+  font-size: clamp(0.95rem, 2vw, 1.2rem);
+  color: rgba(244, 251, 255, 0.65);
+  letter-spacing: 0.05em;
+}
+
+.home-cards {
+  display: flex;
+  gap: 24px;
+  margin-top: 16px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.home-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  width: 260px;
+  padding: 28px 24px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 16px;
+  background: rgba(2, 7, 18, 0.6);
+  backdrop-filter: blur(12px);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: center;
+}
+
+.home-card:hover {
+  border-color: rgba(102, 240, 255, 0.4);
+  background: rgba(2, 7, 18, 0.8);
+  transform: translateY(-4px);
+  box-shadow: 0 20px 60px rgba(102, 240, 255, 0.15);
+}
+
+.home-card h2 {
+  margin: 0;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #f6fbff;
+}
+
+.home-card p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: rgba(244, 251, 255, 0.6);
+  line-height: 1.5;
+}
+
+.card-icon {
+  width: 72px;
+  height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  margin-bottom: 8px;
+}
+
+.nebula-icon {
+  color: #66f0ff;
+  background: radial-gradient(circle, rgba(102, 240, 255, 0.15), transparent 70%);
+}
+
+.sword-icon {
+  color: #ffb4a8;
+  background: radial-gradient(circle, rgba(255, 180, 168, 0.15), transparent 70%);
+}
+
+.card-enter {
+  margin-top: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: rgba(102, 240, 255, 0.8);
+  transition: transform 0.2s ease;
+}
+
+.home-card:hover .card-enter {
+  transform: translateX(4px);
+}
+
+.home-footer {
+  margin-top: 24px;
+}
+
+.home-footer p {
+  margin: 0;
+  font-size: 0.85rem;
+  color: rgba(244, 251, 255, 0.4);
+}
+
 @media (max-width: 720px) {
   body {
     overflow: auto;
@@ -154,6 +408,19 @@ select {
   .top-bar {
     align-items: stretch;
     flex-direction: column;
+  }
+
+  .top-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .effect-switch {
+    width: 100%;
+  }
+
+  .effect-switch button {
+    flex: 1;
   }
 
   .gesture-pill {

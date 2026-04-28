@@ -1,21 +1,55 @@
 import type { NormalizedLandmark } from "@mediapipe/tasks-vision";
-import type { GestureName } from "../types";
+import type { GestureName, HandMetrics, SwordState } from "../types";
 
+const WRIST = 0;
 const THUMB_TIP = 4;
+const INDEX_MCP = 5;
 const INDEX_TIP = 8;
 const MIDDLE_TIP = 12;
 const RING_TIP = 16;
+const PINKY_MCP = 17;
 const PINKY_TIP = 20;
-const WRIST = 0;
 
 function distance(a: NormalizedLandmark, b: NormalizedLandmark) {
   return Math.hypot(a.x - b.x, a.y - b.y, (a.z ?? 0) - (b.z ?? 0));
 }
 
+function average(points: NormalizedLandmark[]) {
+  const total = points.reduce(
+    (sum, point) => ({
+      x: sum.x + point.x,
+      y: sum.y + point.y,
+      z: sum.z + (point.z ?? 0),
+    }),
+    { x: 0, y: 0, z: 0 },
+  );
+
+  return {
+    x: total.x / points.length,
+    y: total.y / points.length,
+    z: total.z / points.length,
+  };
+}
+
+export function getHandMetrics(landmarks: NormalizedLandmark[]): HandMetrics | null {
+  if (landmarks.length < 21) return null;
+
+  const wrist = landmarks[WRIST];
+  const center = average([wrist, landmarks[INDEX_MCP], landmarks[PINKY_MCP]]);
+  const palmScale = Math.max(distance(wrist, landmarks[INDEX_MCP]), distance(wrist, landmarks[PINKY_MCP]));
+  const averageZ = landmarks.reduce((sum, point) => sum + (point.z ?? 0), 0) / landmarks.length;
+  const indexTip = landmarks[INDEX_TIP];
+
+  return {
+    center,
+    indexTip: { x: indexTip.x, y: indexTip.y, z: indexTip.z ?? 0 },
+    averageZ,
+    palmScale,
+  };
+}
+
 export function detectGesture(landmarks: NormalizedLandmark[]): GestureName {
-  if (landmarks.length < 21) {
-    return "Idle";
-  }
+  if (landmarks.length < 21) return "Idle";
 
   const wrist = landmarks[WRIST];
   const thumbTip = landmarks[THUMB_TIP];
@@ -27,22 +61,56 @@ export function detectGesture(landmarks: NormalizedLandmark[]): GestureName {
     landmarks[PINKY_TIP],
   ];
 
-  // 拇指和食指指尖距离很近，判断为捏合。
   if (distance(thumbTip, indexTip) < 0.055) {
     return "Pinch";
   }
 
-  // 使用 wrist 到各个指尖的归一化距离，做一个轻量的张开/握拳判断。
-  const extendedCount = fingerTips.filter((tip) => distance(tip, wrist) > 0.27).length;
-  const foldedCount = fingerTips.filter((tip) => distance(tip, wrist) < 0.2).length;
-
-  if (extendedCount >= 3) {
-    return "Open Palm";
-  }
+  const extendedCount = fingerTips.filter((tip) => distance(tip, wrist) > 0.25).length;
+  const foldedCount = fingerTips.filter((tip) => distance(tip, wrist) < 0.18).length;
 
   if (foldedCount >= 3) {
     return "Fist";
   }
 
+  if (extendedCount >= 3) {
+    return "OpenPalm";
+  }
+
   return "Idle";
+}
+
+export function detectPush(
+  baseGesture: GestureName,
+  metrics: HandMetrics,
+  previousMetrics: HandMetrics | null,
+  threshold: number = 0.18,
+): number {
+  if (baseGesture !== "OpenPalm" || !previousMetrics) return 0;
+
+  const scaleGrowth = metrics.palmScale - previousMetrics.palmScale;
+  const zForward = previousMetrics.averageZ - metrics.averageZ;
+  const centerSpeed = Math.hypot(
+    metrics.center.x - previousMetrics.center.x,
+    metrics.center.y - previousMetrics.center.y,
+  );
+
+  const speedOk = centerSpeed > 0.012;
+  const scaleOk = scaleGrowth > 0.008;
+  const forwardOk = zForward > 0.006;
+
+  const pushScore = scaleGrowth * 8 + zForward * 12 + centerSpeed * 3 + (forwardOk ? 0.15 : 0);
+
+  if (speedOk && (scaleOk || forwardOk)) {
+    return pushScore > threshold ? Math.min(pushScore, 1) : 0;
+  }
+
+  return 0;
+}
+
+export function gestureToSwordState(gesture: GestureName): SwordState {
+  if (gesture === "OpenPalm") return "array";
+  if (gesture === "Pinch") return "gather";
+  if (gesture === "Fist") return "charge";
+  if (gesture === "Push") return "shoot";
+  return "idle";
 }

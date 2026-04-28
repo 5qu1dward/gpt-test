@@ -1,147 +1,93 @@
-import { useEffect, useRef, useState } from "react";
-import { ParticleScene } from "./components/ParticleScene";
-import { initCamera } from "./lib/camera";
-import { detectGesture } from "./lib/gesture";
-import { createHandLandmarker } from "./lib/handLandmarker";
-import type { HandState } from "./types";
+import { useState } from "react";
+import { SwordApp } from "./SwordApp";
+import "./styles.css";
+import "./styles-home.css";
 
-const initialHandState: HandState = {
-  gesture: "Idle",
-  landmarks: null,
-  indexTip: null,
-};
-
-const DETECTION_INTERVAL_MS = 33;
-
-const gestureText: Record<HandState["gesture"], string> = {
-  Idle: "待机",
-  "Open Palm": "张开手掌",
-  Pinch: "捏合",
-  Fist: "握拳",
-};
-
-function errorToMessage(error: unknown) {
-  if (error instanceof Error) return error.message;
-  if (error instanceof Event) return "浏览器资源加载失败，请检查模型文件或网络。";
-  return String(error);
-}
+type Page = "home" | "nebula" | "sword";
 
 export default function App() {
-  const videoRef = useRef<HTMLVideoElement | null>(null);
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const handStateRef = useRef<HandState>(initialHandState);
-  const [handState, setHandState] = useState<HandState>(initialHandState);
-  const [status, setStatus] = useState("正在初始化摄像头和手势识别模型...");
-  const [error, setError] = useState<string | null>(null);
+  const [page, setPage] = useState<Page>("home");
 
-  useEffect(() => {
-    let stream: MediaStream | null = null;
-    let frameId = 0;
-    let cancelled = false;
-    let lastDetection = 0;
-    let lastUiUpdate = 0;
-    let lastGesture: HandState["gesture"] = initialHandState.gesture;
-
-    const publishHandState = (nextHandState: HandState) => {
-      handStateRef.current = nextHandState;
-
-      const now = performance.now();
-      if (nextHandState.gesture !== lastGesture || now - lastUiUpdate > 160) {
-        lastGesture = nextHandState.gesture;
-        lastUiUpdate = now;
-        setHandState(nextHandState);
-      }
-    };
-
-    const start = async () => {
-      const video = videoRef.current;
-      if (!video) return;
-
-      try {
-        stream = await initCamera(video);
-        const handLandmarker = await createHandLandmarker();
-
-        setStatus("摄像头已启动。请移动手部控制粒子，摄像头画面不会作为背景显示。");
-
-        const detect = () => {
-          if (cancelled) return;
-
-          if (video.videoWidth > 0 && video.videoHeight > 0) {
-            const now = performance.now();
-
-            if (now - lastDetection < DETECTION_INTERVAL_MS) {
-              frameId = requestAnimationFrame(detect);
-              return;
-            }
-
-            lastDetection = now;
-            const result = handLandmarker.detectForVideo(video, now);
-            const landmarks = result.landmarks[0] ?? null;
-
-            if (landmarks) {
-              const gesture = detectGesture(landmarks);
-              const indexTip = landmarks[8];
-              const previousTip = handStateRef.current.indexTip;
-              const smoothedTip = previousTip
-                ? {
-                    x: previousTip.x + (indexTip.x - previousTip.x) * 0.42,
-                    y: previousTip.y + (indexTip.y - previousTip.y) * 0.42,
-                  }
-                : { x: indexTip.x, y: indexTip.y };
-
-              publishHandState({
-                gesture,
-                landmarks,
-                indexTip: smoothedTip,
-              });
-            } else {
-              publishHandState(initialHandState);
-            }
-          }
-
-          frameId = requestAnimationFrame(detect);
-        };
-
-        detect();
-      } catch (err) {
-        setError(errorToMessage(err));
-        setStatus("启动失败。请检查摄像头权限、localhost 环境，以及模型文件是否可访问。");
-      }
-    };
-
-    start();
-
-    return () => {
-      cancelled = true;
-      cancelAnimationFrame(frameId);
-      stream?.getTracks().forEach((track) => track.stop());
-    };
-  }, []);
+  if (page !== "home") {
+    return (
+      <SwordApp
+        effectMode={page}
+        onBack={() => setPage("home")}
+      />
+    );
+  }
 
   return (
-    <main className="app-shell">
-      <header className="top-bar">
-        <h1>手势粒子控制器</h1>
-        <div className="gesture-pill">{gestureText[handState.gesture]}</div>
-      </header>
-
-      <section className="stage" aria-label="手势粒子控制器">
-        <video ref={videoRef} className="camera-feed" playsInline muted />
-        <canvas ref={canvasRef} className="hand-overlay" />
-        <ParticleScene handStateRef={handStateRef} />
-
-        <div className="status-panel">
-          <span>{status}</span>
-          {error && <strong>{error}</strong>}
+    <div className="home-shell">
+      <div className="home-content">
+        <div className="home-logo">
+          <svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="40" cy="40" r="38" stroke="url(#grad1)" strokeWidth="2" fill="none" />
+            <path d="M40 15 L45 35 L65 40 L45 45 L40 65 L35 45 L15 40 L35 35 Z" fill="url(#grad1)" opacity="0.8" />
+            <circle cx="40" cy="40" r="8" fill="url(#grad1)" />
+            <defs>
+              <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#66f0ff" />
+                <stop offset="100%" stopColor="#ffb4a8" />
+              </linearGradient>
+            </defs>
+          </svg>
         </div>
-      </section>
 
-      <footer className="gesture-help">
-        <span>张开手掌：粒子扩散</span>
-        <span>捏合手指：粒子聚集</span>
-        <span>握拳：粒子暂停</span>
-        <span>移动食指：控制位置</span>
-      </footer>
-    </main>
+        <h1 className="home-title">章鱼哥的实验室</h1>
+        <p className="home-subtitle">探索手势与粒子特效的无限可能</p>
+
+        <div className="home-cards">
+          <button
+            className="home-card"
+            onClick={() => setPage("nebula")}
+            type="button"
+          >
+            <div className="card-icon nebula-icon">
+              <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+                <circle cx="24" cy="24" r="4" fill="currentColor" />
+                <circle cx="24" cy="24" r="10" stroke="currentColor" strokeWidth="1.5" strokeDasharray="3 3" opacity="0.6" />
+                <circle cx="24" cy="24" r="16" stroke="currentColor" strokeWidth="1" strokeDasharray="4 4" opacity="0.3" />
+                <circle cx="12" cy="16" r="2" fill="currentColor" opacity="0.5" />
+                <circle cx="36" cy="12" r="1.5" fill="currentColor" opacity="0.4" />
+                <circle cx="38" cy="34" r="2" fill="currentColor" opacity="0.5" />
+                <circle cx="10" cy="32" r="1.5" fill="currentColor" opacity="0.4" />
+              </svg>
+            </div>
+            <h2>星云粒子</h2>
+            <p>粒子跟随手势绽放与聚合，模拟星云般的流动效果</p>
+            <span className="card-enter">进入 →</span>
+          </button>
+
+          <button
+            className="home-card"
+            onClick={() => setPage("sword")}
+            type="button"
+          >
+            <div className="card-icon sword-icon">
+              <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+                <path d="M24 4 L28 20 L24 44 L20 20 Z" fill="currentColor" opacity="0.9" />
+                <path d="M12 18 L36 18 L32 22 L16 22 Z" fill="currentColor" opacity="0.7" />
+                <circle cx="24" cy="18" r="3" fill="currentColor" />
+                <path d="M18 28 L24 24 L30 28" stroke="currentColor" strokeWidth="1.5" fill="none" opacity="0.6" />
+              </svg>
+            </div>
+            <h2>万剑归宗</h2>
+            <p>手势控制飞剑阵列，张开展开剑阵，捏合万剑归一</p>
+            <span className="card-enter">进入 →</span>
+          </button>
+        </div>
+
+        <footer className="home-footer">
+          <p>基于手势识别的实时粒子特效演示</p>
+        </footer>
+      </div>
+
+      <div className="home-bg-orbs">
+        <div className="orb orb-1" />
+        <div className="orb orb-2" />
+        <div className="orb orb-3" />
+      </div>
+    </div>
   );
 }

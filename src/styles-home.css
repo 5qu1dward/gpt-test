@@ -1,0 +1,19 @@
+.back-btn-wrapper {
+  min-width: 120px;
+}
+
+.back-btn {
+  padding: 8px 14px;
+  border: 1px solid rgba(102, 240, 255, 0.35);
+  border-radius: 6px;
+  background: rgba(2, 7, 18, 0.72);
+  color: rgba(102, 240, 255, 0.9);
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+}
+
+.back-btn:hover {
+  background: rgba(102, 240, 255, 0.15);
+  box-shadow: 0 0 14px rgba(102, 240, 255, 0.2);
+}
