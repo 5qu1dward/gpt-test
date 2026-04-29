@@ -31,7 +31,7 @@ export default function App() {
         </div>
 
         <h1 className="home-title">Squidward‘s Lab</h1>
-        <p className="home-subtitle">基于ai编程的娱乐实验小站</p>
+        <p className="home-subtitle">基于AI编程的娱乐实验小站</p>
 
         <div className="home-cards">
           <button className="home-card" onClick={() => setPage("nebula")} type="button">
