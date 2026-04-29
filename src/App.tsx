@@ -1,20 +1,16 @@
 import { useState } from "react";
 import { SwordApp } from "./SwordApp";
+import type { AppMode } from "./types";
 import "./styles.css";
 import "./styles-home.css";
 
-type Page = "home" | "nebula" | "sword";
+type Page = "home" | AppMode;
 
 export default function App() {
   const [page, setPage] = useState<Page>("home");
 
   if (page !== "home") {
-    return (
-      <SwordApp
-        effectMode={page}
-        onBack={() => setPage("home")}
-      />
-    );
+    return <SwordApp effectMode={page} onBack={() => setPage("home")} />;
   }
 
   return (
@@ -34,15 +30,11 @@ export default function App() {
           </svg>
         </div>
 
-        <h1 className="home-title">章鱼哥的实验室</h1>
-        <p className="home-subtitle">探索手势与粒子特效的无限可能</p>
+        <h1 className="home-title">Squidward‘s Lab</h1>
+        <p className="home-subtitle">一字闲</p>
 
         <div className="home-cards">
-          <button
-            className="home-card"
-            onClick={() => setPage("nebula")}
-            type="button"
-          >
+          <button className="home-card" onClick={() => setPage("nebula")} type="button">
             <div className="card-icon nebula-icon">
               <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
                 <circle cx="24" cy="24" r="4" fill="currentColor" />
@@ -55,15 +47,11 @@ export default function App() {
               </svg>
             </div>
             <h2>星云粒子</h2>
-            <p>粒子跟随手势绽放与聚合，模拟星云般的流动效果</p>
-            <span className="card-enter">进入 →</span>
+            <p>粒子跟随手势扩散与聚合，模拟星云般的流动效果。</p>
+            <span className="card-enter">进入</span>
           </button>
 
-          <button
-            className="home-card"
-            onClick={() => setPage("sword")}
-            type="button"
-          >
+          <button className="home-card" onClick={() => setPage("sword")} type="button">
             <div className="card-icon sword-icon">
               <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
                 <path d="M24 4 L28 20 L24 44 L20 20 Z" fill="currentColor" opacity="0.9" />
@@ -73,13 +61,43 @@ export default function App() {
               </svg>
             </div>
             <h2>万剑归宗</h2>
-            <p>手势控制飞剑阵列，张开展开剑阵，捏合万剑归一</p>
-            <span className="card-enter">进入 →</span>
+            <p>手势控制飞剑阵列，张开展开剑阵，捏合万剑归一。</p>
+            <span className="card-enter">进入</span>
+          </button>
+
+          <button className="home-card" onClick={() => setPage("particleText")} type="button">
+            <div className="card-icon text-icon">
+              <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+                <path d="M10 36 L18 12 H23 L31 36 H26 L24 30 H17 L15 36 H10Z" fill="currentColor" opacity="0.9" />
+                <path d="M34 12 H39 V36 H34 V12Z" fill="currentColor" opacity="0.72" />
+                <circle cx="12" cy="10" r="1.8" fill="currentColor" opacity="0.55" />
+                <circle cx="39" cy="38" r="1.6" fill="currentColor" opacity="0.5" />
+                <circle cx="31" cy="8" r="1.2" fill="currentColor" opacity="0.42" />
+              </svg>
+            </div>
+            <h2>粒子文字</h2>
+            <p>输入文字或选择预设，让粒子聚合成 AI、中文或自定义文本。</p>
+            <span className="card-enter">进入</span>
+          </button>
+
+          <button className="home-card" onClick={() => setPage("mouseUniverse")} type="button">
+            <div className="card-icon mouse-icon">
+              <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+                <path d="M16 8 L36 28 L27 30 L23 40 L16 8Z" fill="currentColor" opacity="0.88" />
+                <circle cx="31" cy="13" r="2" fill="currentColor" opacity="0.62" />
+                <circle cx="37" cy="19" r="1.4" fill="currentColor" opacity="0.5" />
+                <circle cx="10" cy="34" r="2.2" fill="currentColor" opacity="0.5" />
+                <circle cx="39" cy="37" r="1.8" fill="currentColor" opacity="0.42" />
+              </svg>
+            </div>
+            <h2>鼠标粒子宇宙</h2>
+            <p>移动、点击、长按、拖动和双击鼠标，操控一片霓虹粒子宇宙。</p>
+            <span className="card-enter">进入</span>
           </button>
         </div>
 
         <footer className="home-footer">
-          <p>基于手势识别的实时粒子特效演示</p>
+          <p>基于实时交互的粒子特效演示</p>
         </footer>
       </div>
 

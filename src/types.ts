@@ -6,6 +6,8 @@ export type SwordState = "idle" | "array" | "gather" | "charge" | "shoot";
 
 export type EffectMode = "nebula" | "sword";
 
+export type AppMode = EffectMode | "particleText" | "mouseUniverse";
+
 export type HandPoint = {
   x: number;
   y: number;
@@ -23,6 +25,7 @@ export type HandState = {
   gesture: GestureName;
   swordState: SwordState;
   landmarks: NormalizedLandmark[] | null;
+  hands: HandMetrics[];
   indexTip: HandPoint | null;
   handCenter: HandPoint | null;
   averageZ: number;

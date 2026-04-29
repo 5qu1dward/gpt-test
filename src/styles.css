@@ -91,6 +91,15 @@ select {
   box-shadow: 0 0 18px rgba(102, 240, 255, 0.18);
 }
 
+.mode-switch {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.mode-switch button {
+  min-width: 82px;
+}
+
 .gesture-pill {
   min-width: 128px;
   padding: 10px 14px;
@@ -145,6 +154,134 @@ select {
 .particle-scene {
   z-index: 3;
   pointer-events: none;
+}
+
+.particle-text-mode,
+.mouse-universe-mode,
+.particle-text-canvas,
+.mouse-universe-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.particle-text-mode,
+.mouse-universe-mode {
+  z-index: 3;
+  overflow: hidden;
+}
+
+.mouse-universe-mode canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.particle-text-canvas {
+  display: block;
+  background:
+    radial-gradient(circle at 50% 45%, rgba(80, 236, 255, 0.13), transparent 38%),
+    radial-gradient(circle at 42% 52%, rgba(178, 109, 255, 0.1), transparent 35%),
+    #030711;
+}
+
+.mouse-universe-canvas {
+  display: block;
+  touch-action: none;
+  cursor: crosshair;
+  background:
+    radial-gradient(circle at 50% 48%, rgba(78, 229, 255, 0.11), transparent 38%),
+    radial-gradient(circle at 34% 62%, rgba(178, 109, 255, 0.09), transparent 32%),
+    radial-gradient(circle at 72% 32%, rgba(255, 255, 255, 0.05), transparent 28%),
+    #02040c;
+}
+
+.text-control-panel,
+.mouse-universe-instructions {
+  position: absolute;
+  left: 16px;
+  top: 16px;
+  z-index: 5;
+  display: grid;
+  gap: 10px;
+  width: min(430px, calc(100% - 32px));
+  padding: 14px;
+  border: 1px solid rgba(102, 240, 255, 0.24);
+  border-radius: 8px;
+  background: rgba(2, 7, 18, 0.66);
+  color: rgba(244, 251, 255, 0.88);
+  box-shadow: 0 0 32px rgba(102, 240, 255, 0.12);
+  backdrop-filter: blur(12px);
+}
+
+.text-control-panel label,
+.mouse-universe-instructions strong {
+  color: #f6fbff;
+  font-weight: 760;
+}
+
+.text-input-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+}
+
+.text-input-row input {
+  min-width: 0;
+  padding: 10px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 6px;
+  outline: none;
+  background: rgba(0, 0, 0, 0.34);
+  color: #f4fbff;
+}
+
+.text-input-row input:focus {
+  border-color: rgba(102, 240, 255, 0.58);
+  box-shadow: 0 0 0 3px rgba(102, 240, 255, 0.12);
+}
+
+.text-input-row button,
+.preset-row button {
+  border: 1px solid rgba(102, 240, 255, 0.24);
+  border-radius: 6px;
+  background: rgba(102, 240, 255, 0.1);
+  color: #f4fbff;
+  cursor: pointer;
+}
+
+.text-input-row button {
+  padding: 10px 14px;
+}
+
+.preset-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.preset-row button {
+  padding: 7px 10px;
+  color: rgba(244, 251, 255, 0.78);
+}
+
+.preset-row button.active {
+  border-color: rgba(192, 139, 255, 0.56);
+  background: rgba(192, 139, 255, 0.18);
+  color: #ffffff;
+}
+
+.mouse-universe-instructions {
+  left: auto;
+  right: 16px;
+  width: min(360px, calc(100% - 32px));
+  line-height: 1.45;
+}
+
+.mouse-universe-instructions span {
+  color: rgba(244, 251, 255, 0.74);
+  font-size: 0.92rem;
 }
 
 .status-panel {
@@ -373,6 +510,16 @@ select {
   background: radial-gradient(circle, rgba(255, 180, 168, 0.15), transparent 70%);
 }
 
+.text-icon {
+  color: #c9a0ff;
+  background: radial-gradient(circle, rgba(201, 160, 255, 0.15), transparent 70%);
+}
+
+.mouse-icon {
+  color: #a8ffef;
+  background: radial-gradient(circle, rgba(168, 255, 239, 0.15), transparent 70%);
+}
+
 .card-enter {
   margin-top: 8px;
   font-size: 0.9rem;
@@ -421,6 +568,14 @@ select {
 
   .effect-switch button {
     flex: 1;
+  }
+
+  .text-control-panel,
+  .mouse-universe-instructions {
+    top: 12px;
+    right: 12px;
+    left: 12px;
+    width: auto;
   }
 
   .gesture-pill {
